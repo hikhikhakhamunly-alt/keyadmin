@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KEY CONSOLE</title>
+<style>
+:root{--g:#39ff88;--dim:#1f7a4a;--bg:#000;--panel:#031a0e;--warn:#ffb000;--bad:#ff4d4d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--g);font:14px/1.5 "Consolas","Courier New",monospace;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 1px,transparent 1px 3px);z-index:9}
+header{border-bottom:1px solid var(--dim);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+header b{font-size:18px;letter-spacing:2px}
+.blink{animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:0}}
+main{padding:14px 16px;max-width:1200px;margin:auto}
+.box{border:1px solid var(--dim);background:var(--panel);padding:12px;margin-bottom:14px}
+.box h3{margin:0 0 10px;font-size:14px;color:var(--warn);letter-spacing:1px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}
+input,select{background:#000;color:var(--g);border:1px solid var(--dim);padding:7px 9px;font:inherit;min-width:0}
+input:focus,select:focus{outline:none;border-color:var(--g);box-shadow:0 0 6px rgba(57,255,136,.4)}
+button{background:transparent;color:var(--g);border:1px solid var(--g);padding:7px 12px;font:inherit;cursor:pointer;transition:background .1s}
+button:hover:not(:disabled){background:var(--g);color:#000}
+button:active:not(:disabled){transform:translateY(1px)}
+button:disabled{opacity:.35;cursor:not-allowed}
+button.warn{border-color:var(--warn);color:var(--warn)}
+button.warn:hover:not(:disabled){background:var(--warn);color:#000}
+button.bad{border-color:var(--bad);color:var(--bad)}
+button.bad:hover:not(:disabled){background:var(--bad);color:#000}
+.busy::after{content:" ...";animation:bl .6s steps(2) infinite}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{border:1px solid var(--dim);padding:10px}
+.stat .n{font-size:24px;color:var(--warn)}
+.bars{display:flex;align-items:flex-end;gap:4px;height:90px;margin-top:8px}
+.bars div{flex:1;background:var(--g);min-height:2px;position:relative;opacity:.85}
+.bars div span{position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:9px;color:var(--dim)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px dashed var(--dim);padding:6px 6px;text-align:left;white-space:nowrap}
+th{color:var(--warn)}
+tr:hover td{background:#052b17}
+.tag{padding:1px 6px;border:1px solid;font-size:11px}
+.s-active{color:var(--g);border-color:var(--g)}
+.s-locked{color:var(--warn);border-color:var(--warn)}
+.s-expired,.s-used{color:var(--bad);border-color:var(--bad)}
+.tablewrap{max-height:460px;overflow:auto;border:1px solid var(--dim)}
+.toast{position:fixed;bottom:14px;right:14px;border:1px solid var(--g);background:#000;padding:10px 14px;z-index:20;animation:up .25s ease}
+.toast.err{border-color:var(--bad);color:var(--bad)}
+@keyframes up{from{transform:translateY(12px);opacity:0}}
+.login{max-width:360px;margin:12vh auto;border:1px solid var(--dim);background:var(--panel);padding:20px}
+.hidden{display:none!important}
+.muted{color:var(--dim)}
+</style>
+</head>
+<body>
+
+<header>
+  <b>&gt; KEY CONSOLE<span class="blink">_</span></b>
+  <div class="row" id="who" class="hidden"></div>
+</header>
+
+<!-- ĐĂNG NHẬP -->
+<section id="loginView" class="login">
+  <div>&gt; AUTH REQUIRED</div>
+  <div class="row"><input id="lName" placeholder="username" style="width:100%"></div>
+  <div class="row"><input id="lPass" type="password" placeholder="password" style="width:100%"></div>
+  <div class="row"><button id="lBtn" style="width:100%">LOGIN</button></div>
+  <div class="muted" style="font-size:12px">Dùng tài khoản admin trong game.</div>
+</section>
+
+<main id="app" class="hidden">
+
+  <!-- THỐNG KÊ -->
+  <div class="box">
+    <h3>&gt; STATS <button id="reload" style="float:right;padding:2px 8px">reload</button></h3>
+    <div class="stats" id="stats"></div>
+    <div class="muted" style="margin-top:16px;font-size:11px">Số key tạo 14 ngày gần nhất</div>
+    <div class="bars" id="chart"></div>
+  </div>
+
+  <!-- TẠO KEY -->
+  <div class="box">
+    <h3>&gt; CREATE KEY</h3>
+    <div class="row">
+      <select id="kType">
+        <option value="xu">xu (cộng xu)</option>
+        <option value="buff">buff (sát thương x2–x10)</option>
+        <option value="vip">vip (danh hiệu)</option>
+      </select>
+      <input id="kValue" type="number" value="50000" placeholder="giá trị" style="width:130px">
+      <input id="kCount" type="number" value="1" min="1" max="200" style="width:90px" title="số lượng">
+      <input id="kDays" type="number" value="0" min="0" style="width:90px" title="hạn (ngày, 0 = không hạn)">
+      <input id="kMax" type="number" value="1" min="1" style="width:90px" title="số lượt dùng">
+    </div>
+    <div class="row">
+      <select id="kPrefix">
+        <option value="VIPSUPER">VIPSUPER-</option>
+        <option value="HONGQUAN">HONGQUAN-</option>
+      </select>
+      <input id="kBound" placeholder="gắn tài khoản (tùy chọn)" style="width:240px">
+      <button id="kMake">[ TẠO KEY ]</button>
+    </div>
+    <div class="row"><textarea id="kOut" rows="4" readonly style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit"></textarea></div>
+    <div class="row"><button id="kCopy">copy</button></div>
+  </div>
+
+  <!-- DANH SÁCH -->
+  <div class="box">
+    <h3>&gt; KEY LIST</h3>
+    <div class="row">
+      <input id="fSearch" placeholder="tìm mã / người tạo / gắn tài khoản" style="width:280px">
+      <select id="fType"><option value="">mọi loại</option><option>xu</option><option>buff</option><option>vip</option></select>
+      <select id="fStatus"><option value="">mọi trạng thái</option><option>active</option><option>locked</option><option>expired</option><option>used</option></select>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>mã</th><th>loại</th><th>giá trị</th><th>trạng thái</th><th>lượt</th><th>hạn</th><th>gắn TK</th><th>tạo bởi</th><th>thao tác</th></tr></thead>
+        <tbody id="kBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* URL Apps Script (cùng máy chủ với game) */
+const API='https://script.google.com/macros/s/AKfycbxWjJjYsgyLci4teWEdzp7SocLfpO9WnmwErbyq1-ZB2NYurcVftXgE0WjvTR2WLhh15A/exec';
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>Math.floor(Number(n)||0).toLocaleString('vi-VN');
+let ME=null, KEYS=[];
+
+function toast(msg,err){
+  const t=document.createElement('div');
+  t.className='toast'+(err?' err':'');t.textContent='> '+msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2600);
+}
+
+async function api(body){
+  let r;
+  try{r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})}
+  catch(e){throw new Error('Không kết nối được máy chủ')}
+  let j;
+  try{j=await r.json()}catch(e){throw new Error('Máy chủ trả về sai định dạng')}
+  if(!j.ok){const e=new Error(j.error||'Lỗi');e.code=j.code;throw e}
+  return j;
+}
+async function call(op,extra={}){
+  return api({action:'admin',name:ME.name,pass:ME.pass,op,...extra});
+}
+async function run(btn,fn){
+  if(btn){btn.disabled=true;btn.classList.add('busy')}
+  try{return await fn()}
+  catch(e){toast(e.message||'Lỗi',true);return null}
+  finally{if(btn){btn.disabled=false;btn.classList.remove('busy')}}
+}
+
+/* ===== ĐĂNG NHẬP ===== */
+$('lBtn').onclick=()=>run($('lBtn'),async()=>{
+  const name=$('lName').value.trim(),pass=$('lPass').value;
+  if(!name||!pass)return toast('Nhập tên và mật khẩu',true);
+  const j=await api({action:'login',name,pass});
+  if(j.role!=='admin'&&j.role!=='superadmin')throw new Error('Tài khoản không có quyền');
+  ME={name,pass,role:j.role};
+  sessionStorage.setItem('kc',JSON.stringify(ME));
+  enter();
+});
+['lName','lPass'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('lBtn').click()}));
+
+function enter(){
+  $('loginView').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('who').innerHTML=`<span>user: ${esc(ME.name)}</span><span class="tag ${ME.role==='superadmin'?'s-active':'s-locked'}">${ME.role==='superadmin'?'SUPER':'ADMIN'}</span><button id="out" style="padding:2px 8px">exit</button>`;
+  $('out').onclick=()=>{sessionStorage.removeItem('kc');location.reload()};
+  if(ME.role!=='superadmin'){
+    document.querySelectorAll('.superonly').forEach(x=>x.remove());
+  }
+  load();
+}
+
+/* ===== TẢI DỮ LIỆU ===== */
+async function load(){
+  const j=await call('keyList');
+  KEYS=j.keys;
+  $('stats').innerHTML=[
+    ['tổng key',j.total],['đang hoạt động',j.active],['đã hết lượt',j.soldOut],
+    ['hết hạn',j.expired],['bị khóa',j.locked],['lượt đã dùng',j.usedTotal]
+  ].map(x=>`<div class="stat"><div class="muted">${x[0]}</div><div class="n">${fmt(x[1])}</div></div>`).join('');
+  const max=Math.max(1,...j.chart.map(c=>c.n));
+  $('chart').innerHTML=j.chart.map(c=>`<div style="height:${Math.max(2,c.n/max*100)}%" title="${c.d}: ${c.n}"><span>${c.d.slice(0,5)}</span></div>`).join('');
+  renderKeys();
+}
+function renderKeys(){
+  const q=$('fSearch').value.trim().toLowerCase(),ty=$('fType').value,st=$('fStatus').value;
+  const rows=KEYS.filter(k=>
+    (!q||(k.code+' '+k.createdBy+' '+k.bound).toLowerCase().includes(q))&&
+    (!ty||k.type===ty)&&(!st||k.status===st));
+  $('kBody').innerHTML=rows.map(k=>`<tr>
+    <td>${esc(k.code)}</td>
+    <td>${esc(k.type)}</td>
+    <td>${k.type==='buff'?'x'+k.value:fmt(k.value)}</td>
+    <td><span class="tag s-${esc(k.status)}">${esc(k.status)}</span></td>
+    <td>${k.uses}/${k.maxUses}</td>
+    <td class="muted">${esc(k.expires||'∞')}</td>
+    <td>${esc(k.bound||'—')}</td>
+    <td class="muted">${esc(k.createdBy)}</td>
+    <td>
+      <button onclick="toggleKey('${esc(k.code)}','${k.status==='locked'?'active':'locked'}',this)">${k.status==='locked'?'mở':'khóa'}</button>
+      ${ME.role==='superadmin'?`<button class="warn" onclick="upgradeKey('${esc(k.code)}',this)">nâng</button>
+      <button class="bad" onclick="deleteKey('${esc(k.code)}',this)">xóa</button>`:''}
+    </td></tr>`).join('')||'<tr><td colspan="9" class="muted">[ no keys ]</td></tr>';
+}
+['fSearch','fType','fStatus'].forEach(id=>$(id).addEventListener('input',renderKeys));
+$('reload').onclick=()=>run($('reload'),load);
+
+/* ===== THAO TÁC ===== */
+$('kMake').onclick=()=>run($('kMake'),async()=>{
+  const j=await call('keyCreate',{
+    type:$('kType').value,value:Number($('kValue').value),count:Number($('kCount').value),
+    days:Number($('kDays').value),maxUses:Number($('kMax').value),
+    prefix:$('kPrefix').value,bound:$('kBound').value.trim()
+  });
+  $('kOut').value=j.codes.join('\n');
+  toast(j.message);
+  load();
+});
+$('kCopy').onclick=()=>{navigator.clipboard.writeText($('kOut').value);toast('đã copy')};
+
+async function toggleKey(code,status,btn){
+  await run(btn,async()=>{
+    const j=await call('keyStatus',{code,status});
+    toast(j.message);load();
+  });
+}
+async function deleteKey(code,btn){
+  if(!confirm('Xóa key '+code+'?'))return;
+  await run(btn,async()=>{const j=await call('keyDelete',{code});toast(j.message);load()});
+}
+async function upgradeKey(code,btn){
+  const v=prompt('Giá trị mới (để trống nếu không đổi):','');
+  const d=prompt('Gia hạn thêm bao nhiêu ngày (0 nếu không):','0');
+  const m=prompt('Số lượt tối đa mới (0 nếu không):','0');
+  if(v===null&&d===null&&m===null)return;
+  await run(btn,async()=>{
+    const j=await call('keyUpgrade',{code,value:v||'',addDays:Number(d)||0,maxUses:Number(m)||0});
+    toast(j.message);load();
+  });
+}
+
+/* ===== KHỞI TẠO ===== */
+const saved=sessionStorage.getItem('kc');
+if(saved){try{ME=JSON.parse(saved);enter()}catch(e){sessionStorage.removeItem('kc')}}
+</script>
+</body>
+</html>
