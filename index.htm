@@ -6,119 +6,148 @@
 <title>Quản lý Key — Stock & Fish</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;font:14px/1.5 "Segoe UI",system-ui,Arial,sans-serif;color:#1f2937;background:#f3f6fb}
-.top{background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;box-shadow:0 4px 14px rgba(79,70,229,.25)}
-.top h1{margin:0;font-size:20px;font-weight:700}
-.top .me{display:flex;gap:10px;align-items:center;font-size:14px}
-.badge{padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;background:#fff;color:#4f46e5}
-.badge.sup{background:#fde68a;color:#78350f}
-main{max-width:1180px;margin:0 auto;padding:22px}
-.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 2px 10px rgba(15,23,42,.06);border:1px solid #e5e7eb}
-.card h2{margin:0 0 16px;font-size:16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:10px;color:#111827}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
-.stat{border-radius:14px;padding:16px;color:#fff;background:linear-gradient(135deg,#6366f1,#8b5cf6)}
-.stat:nth-child(2){background:linear-gradient(135deg,#10b981,#059669)}
-.stat:nth-child(3){background:linear-gradient(135deg,#f59e0b,#d97706)}
-.stat:nth-child(4){background:linear-gradient(135deg,#ef4444,#dc2626)}
-.stat:nth-child(5){background:linear-gradient(135deg,#64748b,#475569)}
-.stat:nth-child(6){background:linear-gradient(135deg,#0ea5e9,#0284c7)}
-.stat .l{font-size:12px;opacity:.9}
-.stat .v{font-size:26px;font-weight:800;margin-top:4px}
-.chart{display:flex;align-items:flex-end;gap:8px;height:130px;margin-top:20px;padding-bottom:22px;border-bottom:1px dashed #d1d5db}
-.chart div{flex:1;background:linear-gradient(180deg,#818cf8,#4f46e5);border-radius:8px 8px 0 0;position:relative;min-height:6px}
-.chart div span{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-size:10px;color:#6b7280}
+:root{--cyan:#2edfff;--gold:#ffd34f;--ok:#47ffb3;--bad:#ff5c8a;--txt:#eefaff;--mut:#8fb6d6;--glass:rgba(9,32,66,.72);--line:rgba(46,223,255,.2)}
+html,body{margin:0;min-height:100%}
+body{font:14px/1.45 system-ui,Segoe UI,Arial,sans-serif;color:var(--txt);background:radial-gradient(ellipse at 30% 0,#0b4a7d 0,#031735 45%,#020a20 100%);overflow-x:hidden}
+button,input,select,textarea{font:inherit}
+/* bong bóng nền */
+.bub{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.bub i{position:absolute;bottom:-60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.45),rgba(46,223,255,.06));animation:rise linear infinite}
+@keyframes rise{to{transform:translateY(-115vh);opacity:0}}
+/* thanh tiến trình */
+#prog{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--cyan),var(--gold));z-index:200;transition:width .35s}
+#prog.on{width:85%}
+/* thẻ kính */
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+/* nút */
+.btn{cursor:pointer;border:1px solid var(--cyan);background:linear-gradient(135deg,#0876ed,#09c8f1);color:#fff;border-radius:10px;padding:9px 16px;font-weight:800;transition:transform .12s,filter .15s,opacity .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px)}
+.btn:active:not(:disabled){transform:translateY(2px) scale(.96)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.gold{background:linear-gradient(135deg,#e5a900,#ffdf62);color:#17223a;border-color:#ffe066}
+.btn.danger{background:linear-gradient(135deg,#b91c48,#f44d75);border-color:#ff7fa0}
+.btn.ghost{background:transparent;color:var(--cyan)}
+.btn.sm{padding:6px 11px;font-size:12px}
+.btn.busy{pointer-events:none;opacity:.85}
+.btn.busy::after{content:'';width:12px;height:12px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+input,select,textarea{background:#061a35;color:var(--txt);border:1px solid #21649a;border-radius:9px;padding:9px 11px;outline:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(46,223,255,.15)}
+label.lbl{color:var(--mut);font-size:12px;display:block;margin-bottom:4px}
+.mut{color:var(--mut)}
+.gold{color:var(--gold)}
+.hidden{display:none!important}
+.tag{display:inline-block;font-size:11px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}
+.tag.ok{color:var(--ok);border-color:var(--ok)}
+.tag.bad{color:var(--bad);border-color:var(--bad)}
+.tag.gold{color:var(--gold);border-color:var(--gold)}
+/* khung chính */
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:22px}
+.head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.brand{font-size:22px;font-weight:1000;letter-spacing:.5px}
+.brand span{color:var(--gold)}
+.me{display:flex;gap:10px;align-items:center}
+.card{padding:18px;margin-bottom:16px;animation:fadeUp .5s ease both}
+.card:nth-of-type(2){animation-delay:.08s}
+.card:nth-of-type(3){animation-delay:.16s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}}
+.card h3{margin:0 0 14px;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+/* thống kê */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.stat{padding:14px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;right:-18px;top:-18px;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,rgba(46,223,255,.28),transparent 70%)}
+.stat .l{color:var(--mut);font-size:12px}
+.stat .v{font-size:24px;font-weight:900;margin-top:4px}
+/* biểu đồ cột */
+.chart{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:20px;padding-bottom:20px;border-bottom:1px dashed var(--line)}
+.chart div{flex:1;background:linear-gradient(180deg,var(--cyan),#0369a1);border-radius:6px 6px 0 0;position:relative;min-height:6px;transform:scaleY(0);transform-origin:bottom;animation:grow .8s cubic-bezier(.2,.8,.2,1) forwards}
+.chart div span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:9px;color:var(--mut)}
+@keyframes grow{to{transform:scaleY(1)}}
+/* form */
 .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
-.fld{display:flex;flex-direction:column;gap:6px}
-.fld label{font-size:12px;color:#6b7280;font-weight:600}
-input,select,textarea{background:#f9fafb;color:#111827;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;font:inherit;width:100%}
-input:focus,select:focus,textarea:focus{outline:none;border-color:#6366f1;background:#fff;box-shadow:0 0 0 3px rgba(99,102,241,.15)}
-button{cursor:pointer;border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:600;color:#fff;background:#4f46e5;transition:filter .15s,transform .1s}
-button:hover:not(:disabled){filter:brightness(1.08)}
-button:active:not(:disabled){transform:scale(.97)}
-button:disabled{opacity:.5;cursor:not-allowed}
-button.ghost{background:#eef2ff;color:#4338ca}
-button.warn{background:#f59e0b;color:#fff}
-button.bad{background:#ef4444;color:#fff}
-button.sm{padding:6px 12px;font-size:12px}
-button.full{width:100%}
-.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;margin-left:6px;vertical-align:middle}
-@keyframes rot{to{transform:rotate(360deg)}}
-textarea{min-height:110px;font-family:Consolas,monospace;resize:vertical}
-.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.fld{display:flex;flex-direction:column}
+textarea{min-height:100px;font-family:Consolas,monospace;resize:vertical}
+/* bảng */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .filters input{flex:1;min-width:220px}
 .filters select{width:auto}
-.tablewrap{overflow:auto;max-height:500px;border:1px solid #e5e7eb;border-radius:12px}
+.tablewrap{overflow:auto;max-height:500px;border-radius:12px;border:1px solid var(--line)}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:12px 12px;text-align:left;border-bottom:1px solid #f1f5f9;white-space:nowrap}
-th{position:sticky;top:0;background:#f8fafc;color:#475569;font-weight:700}
-tbody tr:hover td{background:#f8fafc}
-.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700}
-.t-active{background:#dcfce7;color:#15803d}
-.t-locked{background:#fef3c7;color:#b45309}
-.t-expired,.t-used{background:#fee2e2;color:#b91c1c}
-.mut{color:#6b7280}
+th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(46,223,255,.12);white-space:nowrap}
+th{position:sticky;top:0;background:#071e3b;color:var(--mut);font-weight:700;z-index:1}
+tbody tr{animation:rowIn .35s ease both}
+@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}}
+tbody tr:hover td{background:rgba(46,223,255,.07)}
 .acts{display:flex;gap:6px}
-.toast{position:fixed;right:20px;bottom:20px;background:#111827;color:#fff;border-radius:12px;padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:50;animation:up .3s ease;max-width:380px}
-.toast.err{background:#b91c1c}
-@keyframes up{from{transform:translateY(12px);opacity:0}}
-.login{max-width:400px;margin:12vh auto;background:#fff;border-radius:18px;padding:28px;box-shadow:0 10px 30px rgba(15,23,42,.1);border:1px solid #e5e7eb}
-.login h2{margin:0 0 4px;font-size:20px}
-.login .fld{margin-top:12px}
-.login button{margin-top:18px}
-.hidden{display:none!important}
+/* thông báo */
+.toast{position:fixed;right:18px;bottom:18px;padding:12px 16px;border-radius:12px;background:#0a2a4a;border:1px solid var(--cyan);box-shadow:0 8px 20px rgba(0,0,0,.4);z-index:250;max-width:360px;animation:slide .3s ease}
+.toast.err{border-color:var(--bad)}
+.toast.out{opacity:0;transform:translateX(20px);transition:all .35s}
+@keyframes slide{from{transform:translateX(30px);opacity:0}}
+/* đăng nhập */
+.login{position:relative;z-index:1;max-width:400px;margin:12vh auto;padding:28px;text-align:center;animation:pop .5s ease}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.logo{font-size:44px;animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.login .fld{text-align:left;margin-top:12px}
+.login .btn{width:100%;margin-top:18px;padding:12px}
+@media(max-width:700px){.wrap{padding:14px}}
 </style>
 </head>
 <body>
 
-<div class="top">
-  <h1>🔑 Quản lý Key — Stock & Fish</h1>
-  <div class="me" id="who"></div>
-</div>
+<div class="bub" id="bub"></div>
+<div id="prog"></div>
 
-<section id="loginView" class="login">
-  <h2>Đăng nhập quản trị</h2>
-  <div class="mut">Dùng tài khoản admin trong game</div>
-  <div class="fld"><label>Tên đăng nhập</label><input id="lName"></div>
-  <div class="fld"><label>Mật khẩu</label><input id="lPass" type="password"></div>
-  <button id="lBtn" class="full">Vào trang</button>
+<section id="loginView" class="login glass">
+  <div class="logo">🔑</div>
+  <div class="brand" style="margin:6px 0 4px">QUẢN LÝ <span>KEY</span></div>
+  <p class="mut" style="margin:0 0 14px">Đăng nhập bằng tài khoản quản trị</p>
+  <div class="fld"><label class="lbl">Tên đăng nhập</label><input id="lName"></div>
+  <div class="fld"><label class="lbl">Mật khẩu</label><input id="lPass" type="password"></div>
+  <button id="lBtn" class="btn">Vào trang quản lý</button>
 </section>
 
-<main id="app" class="hidden">
+<div id="app" class="wrap hidden">
+  <div class="head">
+    <div class="brand">🌊 Stock <span>&</span> Fish · Key</div>
+    <div class="me" id="who"></div>
+  </div>
 
-  <div class="card">
-    <h2>Thống kê <button class="ghost sm" id="reload">⟳ Làm mới</button></h2>
+  <div class="card glass">
+    <h3>Thống kê <button class="btn ghost sm" id="reload">⟳ Làm mới</button></h3>
     <div class="stats" id="stats"></div>
-    <div class="mut" style="margin-top:18px;font-size:12px">Số key tạo trong 14 ngày gần nhất</div>
+    <div class="mut" style="margin-top:16px;font-size:12px">Số key tạo trong 14 ngày gần nhất</div>
     <div class="chart" id="chart"></div>
   </div>
 
-  <div class="card">
-    <h2>Tạo key mới</h2>
+  <div class="card glass">
+    <h3>Tạo key mới</h3>
     <div class="form">
-      <div class="fld"><label>Loại</label>
+      <div class="fld"><label class="lbl">Loại</label>
         <select id="kType">
           <option value="xu">Xu (cộng xu)</option>
           <option value="buff">Buff (sát thương)</option>
           <option value="vip">VIP (danh hiệu)</option>
         </select></div>
-      <div class="fld"><label>Giá trị</label><input id="kValue" type="number" value="50000"></div>
-      <div class="fld"><label>Số lượng (tối đa 200)</label><input id="kCount" type="number" value="1" min="1" max="200"></div>
-      <div class="fld"><label>Hạn (ngày, 0 = không)</label><input id="kDays" type="number" value="0" min="0"></div>
-      <div class="fld"><label>Số lượt dùng</label><input id="kMax" type="number" value="1" min="1"></div>
-      <div class="fld"><label>Tiền tố</label>
+      <div class="fld"><label class="lbl">Giá trị</label><input id="kValue" type="number" value="50000"></div>
+      <div class="fld"><label class="lbl">Số lượng (tối đa 200)</label><input id="kCount" type="number" value="1" min="1" max="200"></div>
+      <div class="fld"><label class="lbl">Hạn (ngày, 0 = không)</label><input id="kDays" type="number" value="0" min="0"></div>
+      <div class="fld"><label class="lbl">Số lượt dùng</label><input id="kMax" type="number" value="1" min="1"></div>
+      <div class="fld"><label class="lbl">Tiền tố</label>
         <select id="kPrefix">
           <option value="VIPSUPER">VIPSUPER-</option>
           <option value="HONGQUAN">HONGQUAN-</option>
         </select></div>
-      <div class="fld"><label>Gắn tài khoản (tùy chọn)</label><input id="kBound"></div>
-      <div class="fld"><label>&nbsp;</label><button id="kMake">＋ Tạo key</button></div>
+      <div class="fld"><label class="lbl">Gắn tài khoản (tùy chọn)</label><input id="kBound"></div>
+      <div class="fld"><label class="lbl">&nbsp;</label><button id="kMake" class="btn">＋ Tạo key</button></div>
     </div>
-    <div style="margin-top:16px"><textarea id="kOut" readonly placeholder="Key vừa tạo sẽ hiện ở đây"></textarea></div>
-    <div style="margin-top:8px"><button class="ghost sm" id="kCopy">Sao chép tất cả</button></div>
+    <div style="margin-top:14px"><textarea id="kOut" readonly placeholder="Key vừa tạo sẽ hiện ở đây"></textarea></div>
+    <div style="margin-top:8px"><button class="btn ghost sm" id="kCopy">Sao chép tất cả</button></div>
   </div>
 
-  <div class="card">
-    <h2>Danh sách key</h2>
+  <div class="card glass">
+    <h3>Danh sách key</h3>
     <div class="filters">
       <input id="fSearch" placeholder="Tìm mã, người tạo, tài khoản gắn">
       <select id="fType"><option value="">Mọi loại</option><option value="xu">xu</option><option value="buff">buff</option><option value="vip">vip</option></select>
@@ -131,8 +160,7 @@ tbody tr:hover td{background:#f8fafc}
       </table>
     </div>
   </div>
-
-</main>
+</div>
 
 <script>
 const API='https://script.google.com/macros/s/AKfycbxWjJjYsgyLci4teWEdzp7SocLfpO9WnmwErbyq1-ZB2NYurcVftXgE0WjvTR2WLhh15A/exec';
@@ -140,36 +168,57 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>Math.floor(Number(n)||0).toLocaleString('vi-VN');
 const STATUS={active:'Hoạt động',locked:'Đã khóa',expired:'Hết hạn',used:'Hết lượt'};
-let ME=null, KEYS=[];
+let ME=null, KEYS=[], inflight=0;
 
+/* bong bóng nền */
+(function(){
+  const b=$('bub');
+  for(let i=0;i<22;i++){
+    const s=document.createElement('i'),z=6+Math.random()*24;
+    s.style.cssText=`left:${Math.random()*100}%;width:${z}px;height:${z}px;animation-duration:${10+Math.random()*14}s;animation-delay:${-Math.random()*20}s`;
+    b.appendChild(s);
+  }
+})();
+
+function busy(d){inflight+=d;$('prog').classList.toggle('on',inflight>0)}
 function toast(msg,err){
   const t=document.createElement('div');
   t.className='toast'+(err?' err':'');t.textContent=msg;
   document.body.appendChild(t);
-  setTimeout(()=>t.remove(),2600);
+  setTimeout(()=>t.classList.add('out'),2600);
+  setTimeout(()=>t.remove(),3000);
 }
 async function api(body){
-  let r;
-  try{r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})}
-  catch(e){throw new Error('Không kết nối được máy chủ')}
-  let j;
-  try{j=await r.json()}catch(e){throw new Error('Máy chủ trả về sai định dạng')}
-  if(!j.ok){const e=new Error(j.error||'Lỗi');e.code=j.code;throw e}
-  return j;
+  busy(1);
+  try{
+    let r;
+    try{r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})}
+    catch(e){throw new Error('Không kết nối được máy chủ')}
+    let j;
+    try{j=await r.json()}catch(e){throw new Error('Máy chủ trả về sai định dạng')}
+    if(!j.ok){const e=new Error(j.error||'Lỗi');e.code=j.code;throw e}
+    return j;
+  }finally{busy(-1)}
 }
 const call=(op,extra={})=>api({action:'admin',name:ME.name,pass:ME.pass,op,...extra});
 async function run(btn,fn){
-  if(btn){btn.disabled=true;if(!btn.querySelector('.spin'))btn.insertAdjacentHTML('beforeend','<span class="spin"></span>')}
+  if(btn)btn.classList.add('busy');
   try{return await fn()}
   catch(e){toast(e.message||'Lỗi',true);return null}
-  finally{if(btn){btn.disabled=false;const s=btn.querySelector('.spin');if(s)s.remove()}}
+  finally{if(btn)btn.classList.remove('busy')}
+}
+/* số đếm chạy */
+function countUp(el,to){
+  const t0=performance.now();
+  const step=t=>{const k=Math.min(1,(t-t0)/700);el.textContent=fmt(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(step)};
+  requestAnimationFrame(step);
 }
 
 $('lBtn').onclick=()=>run($('lBtn'),async()=>{
   const name=$('lName').value.trim(),pass=$('lPass').value;
   if(!name||!pass)return toast('Nhập tên và mật khẩu',true);
   const j=await api({action:'login',name,pass});
-  if(j.role!=='admin'&&j.role!=='superadmin')throw new Error('Tài khoản không có quyền');
+  if(j.role!=='admin'&&j.role!=='superadmin')throw new Error('Tài khoản không có quyền quản trị');
   ME={name,pass,role:j.role};
   sessionStorage.setItem('kc',JSON.stringify(ME));
   enter();
@@ -180,7 +229,7 @@ function enter(){
   $('loginView').classList.add('hidden');
   $('app').classList.remove('hidden');
   const sup=ME.role==='superadmin';
-  $('who').innerHTML=`<span>${esc(ME.name)}</span><span class="badge ${sup?'sup':''}">${sup?'Super admin':'Admin'}</span><button class="ghost sm" id="out">Thoát</button>`;
+  $('who').innerHTML=`<span class="tag ${sup?'gold':'ok'}">${sup?'👑 Super admin':'🛡️ Admin'}</span><span>${esc(ME.name)}</span><button class="btn danger sm" id="out">Thoát</button>`;
   $('out').onclick=()=>{sessionStorage.removeItem('kc');location.reload()};
   load();
 }
@@ -191,9 +240,10 @@ async function load(){
   $('stats').innerHTML=[
     ['Tổng key',j.total],['Đang hoạt động',j.active],['Hết lượt',j.soldOut],
     ['Hết hạn',j.expired],['Bị khóa',j.locked],['Lượt đã dùng',j.usedTotal]
-  ].map(x=>`<div class="stat"><div class="l">${x[0]}</div><div class="v">${fmt(x[1])}</div></div>`).join('');
+  ].map(x=>`<div class="glass stat"><div class="l">${x[0]}</div><div class="v gold num">0</div></div>`).join('');
+  document.querySelectorAll('#stats .v').forEach((el,i)=>countUp(el,[j.total,j.active,j.soldOut,j.expired,j.locked,j.usedTotal][i]));
   const max=Math.max(1,...j.chart.map(c=>c.n));
-  $('chart').innerHTML=j.chart.map(c=>`<div style="height:${Math.max(6,c.n/max*100)}%" title="${c.d}: ${c.n} key"><span>${c.d}</span></div>`).join('');
+  $('chart').innerHTML=j.chart.map((c,i)=>`<div style="height:${Math.max(6,c.n/max*100)}%;animation-delay:${i*40}ms" title="${c.d}: ${c.n} key"><span>${c.d}</span></div>`).join('');
   renderKeys();
 }
 function renderKeys(){
@@ -202,19 +252,19 @@ function renderKeys(){
   const rows=KEYS.filter(k=>
     (!q||(k.code+' '+k.createdBy+' '+k.bound).toLowerCase().includes(q))&&
     (!ty||k.type===ty)&&(!st||k.status===st));
-  $('kBody').innerHTML=rows.map(k=>`<tr>
+  $('kBody').innerHTML=rows.map((k,i)=>`<tr style="animation-delay:${i*25}ms">
     <td><b>${esc(k.code)}</b></td>
     <td>${esc(k.type)}</td>
-    <td>${k.type==='buff'?'x'+k.value:fmt(k.value)}</td>
-    <td><span class="tag t-${esc(k.status)}">${STATUS[k.status]||esc(k.status)}</span></td>
-    <td>${k.uses}/${k.maxUses}</td>
+    <td class="gold num">${k.type==='buff'?'x'+k.value:fmt(k.value)}</td>
+    <td><span class="tag ${k.status==='active'?'ok':k.status==='locked'?'gold':'bad'}">${STATUS[k.status]||esc(k.status)}</span></td>
+    <td class="num">${k.uses}/${k.maxUses}</td>
     <td class="mut">${esc(k.expires||'Không hạn')}</td>
     <td>${esc(k.bound||'—')}</td>
     <td class="mut">${esc(k.createdBy)}</td>
     <td><div class="acts">
-      <button class="ghost sm" onclick="toggleKey('${esc(k.code)}','${k.status==='locked'?'active':'locked'}',this)">${k.status==='locked'?'Mở khóa':'Khóa'}</button>
-      ${sup?`<button class="warn sm" onclick="upgradeKey('${esc(k.code)}',this)">Nâng cấp</button>
-      <button class="bad sm" onclick="deleteKey('${esc(k.code)}',this)">Xóa</button>`:''}
+      <button class="btn ghost sm" onclick="toggleKey('${esc(k.code)}','${k.status==='locked'?'active':'locked'}',this)">${k.status==='locked'?'Mở khóa':'Khóa'}</button>
+      ${sup?`<button class="btn gold sm" onclick="upgradeKey('${esc(k.code)}',this)">Nâng cấp</button>
+      <button class="btn danger sm" onclick="deleteKey('${esc(k.code)}',this)">Xóa</button>`:''}
     </div></td></tr>`).join('')||'<tr><td colspan="9" class="mut" style="text-align:center;padding:24px">Chưa có key nào</td></tr>';
 }
 ['fSearch','fType','fStatus'].forEach(id=>$(id).addEventListener('input',renderKeys));
